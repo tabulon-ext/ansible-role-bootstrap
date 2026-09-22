@@ -6,14 +6,18 @@ _bootstrap_packages:
   Archlinux: python sudo
   Debian: python3 sudo gnupg python3-apt
   Gentoo: python sudo gentoolkit
-  RedHat: &redhat_packages python3 sudo
-  Rocky: *redhat_packages
+  RedHat: python3 sudo
   Suse: python3 python3-xml sudo
   Amazon: python sudo
   CentOS_7: python sudo
   Debian_8: python sudo gnupg
   Debian_9: python sudo gnupg
+  Debian_10: python3 sudo gnupg2
+  Debian_11: python3 sudo gnupg2
+  Debian_12: python3 sudo gnupg2
   RedHat_7: python sudo
+  Fedora: python3 sudo python3-libdnf5 python3-rpm
+  'Univention Corporate Server': python3 sudo gnupg python3-apt
 
 # Map the right set of packages, based on gathered bootstrap facts.
 bootstrap_packages: "{{ _bootstrap_packages[bootstrap_distribution ~'_'~ bootstrap_distribution_major_version]|default(
@@ -22,23 +26,23 @@ bootstrap_packages: "{{ _bootstrap_packages[bootstrap_distribution ~'_'~ bootstr
 
 _bootstrap_install:
   Alpine:
-    raw: "LANG=C apk update ; apk add {{ bootstrap_packages }}"
+    raw: "export LANG=C ; apk update ; apk add {{ bootstrap_packages }}"
     stdout_regex: 'Installing'
   Archlinux:
-    raw: "LANG=C pacman -Sy --noconfirm {{ bootstrap_packages }}"
+    raw: "export LANG=C ; pacman -Sy --noconfirm {{ bootstrap_packages }}"
     stdout_regex: ' installing python'
   Debian:
-    raw: "LANG=C apt-get update && apt-get install -y {{ bootstrap_packages }}"
+    raw: "export LANG=C ; apt-get update && apt-get install -y {{ bootstrap_packages }}"
     stdout_regex: ' 0 newly installed'
   Gentoo:
-    raw: "LANG=C equery l {{ bootstrap_packages }} ||
+    raw: "export LANG=C ; equery l {{ bootstrap_packages }} ||
           (emaint -a sync ; emerge -qkv {{ bootstrap_packages }} ; echo 'changed')"
     stdout_regex: 'changed'
   RedHat:
-    raw: "LANG=C yum -y install {{ bootstrap_packages }}"
+    raw: "export LANG=C ; yum -y install {{ bootstrap_packages }}"
     stdout_regex: 'Nothing'
   Suse:
-    raw: "LANG=C zypper -n install {{ bootstrap_packages }}"
+    raw: "export LANG=C ; zypper -n install {{ bootstrap_packages }}"
     stdout_regex: 'Nothing'
 
 # Map the right install command, based on gathered bootstrap facts.
@@ -53,7 +57,7 @@ bootstrap_os_family_map:
   Archlinux: [Archlinux, Antergos, Manjaro]
   Debian: [Debian, Ubuntu, Raspbian, Neon, KDE neon,
            Linux Mint, SteamOS, Devuan, Kali, Cumulus Linux,
-           'Pop!_OS', Parrot, Pardus GNU/Linux]
+           'Pop!_OS', Parrot, Pardus GNU/Linux, 'Univention Corporate Server']
   Gentoo: [Gentoo, Funtoo]
   RedHat: [RedHat, Fedora, CentOS, Scientific, SLC,
            Ascendos, CloudLinux, PSBM, Rocky, OracleLinux,
